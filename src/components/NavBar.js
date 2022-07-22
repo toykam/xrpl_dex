@@ -32,6 +32,10 @@ export default function NavBar() {
               <Link to="/trade" className='nav-link fs-6 text-light'>Trade</Link>
             </li>
 
+            <li class="nav-item">
+              <Link to="/my_offers" className='nav-link fs-6 text-light'>My Offers</Link>
+            </li>
+
           </ul>
         </div>
       </div>

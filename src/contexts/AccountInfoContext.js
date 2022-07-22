@@ -1,12 +1,13 @@
 
 
-import React, { createContext, useState } from "react";
+import React, { createContext, useContext, useState } from "react";
+import XRPLClientContext from "./XRPLClientContext";
 
 const AccountInfoContext = createContext();
 
 // client
 
-export function AccountInfoProvider({children, client}) {
+export function AccountInfoProvider({children}) {
 
     const [account, setAccount] = useState(null);
     const [currentAccount, setCurrentAccount] = useState("");
@@ -14,22 +15,16 @@ export function AccountInfoProvider({children, client}) {
 
     const [transactions, setTransactions] = useState([]);
 
+    const {client} = useContext(XRPLClientContext)
 
-    const loadAccountInfo = async (address, client) => {
-
-        
-        if (client.isConnected) {
-            setLoadingAccountInfo(true);
-            _loadAccountInfo(address, client);
-            _loadTransactions(address, client);
-        } else {
-            client.connect().then(() => {
-                loadAccountInfo(address, client);
-            })
-        }
+    const loadAccountInfo = async (address) => {
+        console.log("AccountToLoad: ", address);
+        setLoadingAccountInfo(true);
+        _loadAccountInfo(address);
+        _loadTransactions(address);
     }
 
-    const _loadTransactions = async (address, client) => {
+    const _loadTransactions = async (address) => {
         try {
             client.connect().then(async () => {
                 const account = await client.request({
@@ -41,15 +36,13 @@ export function AccountInfoProvider({children, client}) {
                 setTransactions(account.result.transactions);
         
                 setLoadingAccountInfo(false);
-    
-                // client.disconnect();
             })
         } catch (err) {
             setLoadingAccountInfo(false);
             console.log(err);
         }
     }
-    const _loadAccountInfo = async (address, client) => {
+    const _loadAccountInfo = async (address) => {
         try {
             client.connect().then(async () => {
                 const account = await client.request({
@@ -60,8 +53,6 @@ export function AccountInfoProvider({children, client}) {
                 console.log("account", account);
                 setAccount(account.result.account_data);
                 setCurrentAccount(address);
-    
-                // client.disconnect();
             })
         } catch (err) {
             setLoadingAccountInfo(false);
@@ -73,8 +64,7 @@ export function AccountInfoProvider({children, client}) {
         <AccountInfoContext.Provider value={{
             account, setAccount,
             loadAccountInfo,
-            currentAccount,
-            loadingAccountInfo,
+            currentAccount, loadingAccountInfo,
             transactions,
         }}>
             {children}

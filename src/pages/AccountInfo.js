@@ -7,7 +7,10 @@ export default function AccountInfoPage() {
 
   const {account, transactions, loadingAccountInfo} = useContext(AccountInfoContext);
   return (
-    <div>
+    <div style={{
+      height: "90vh",
+      overflowY: "auto",
+    }}>
       <h3>Account Info</h3>
 
       {account == null ? 

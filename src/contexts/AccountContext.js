@@ -1,5 +1,6 @@
 
-import React, { createContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import AccountInfoContext from "./AccountInfoContext";
 
 const AccountContext = createContext();
 
@@ -7,6 +8,7 @@ export function AccountProvider({children}) {
 
     const [account, setAccount] = useState(null);
     const [accounts, setAccounts] = useState([]);
+    const {loadAccountInfo} = useContext(AccountInfoContext);
 
     const addAccount = (account) => {
         /// check if account exists by checking classicAddress
@@ -32,6 +34,7 @@ export function AccountProvider({children}) {
         try {
             const accounts = JSON.parse(localStorage.getItem("accounts") || "[]");
             setAccounts(accounts);
+            accounts.length > 0 && loadAccountInfo(accounts[0].classicAddress);
         } catch (eror) {
         }
     }
