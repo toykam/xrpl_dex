@@ -1,6 +1,7 @@
 
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import AccountContext from "./AccountContext";
 import XRPLClientContext from "./XRPLClientContext";
 
 const AccountInfoContext = createContext();
@@ -9,27 +10,32 @@ const AccountInfoContext = createContext();
 
 export function AccountInfoProvider({children}) {
 
+    /// account info
     const [account, setAccount] = useState(null);
-    const [currentAccount, setCurrentAccount] = useState("");
+    /// current wallet details
+    /// const [currentAccount, setCurrentAccount] = useState(null);
     const [loadingAccountInfo, setLoadingAccountInfo] = useState(false);
-
+    /// current wallet transactions
     const [transactions, setTransactions] = useState([]);
 
     const {client} = useContext(XRPLClientContext)
+    const {currentAccount} = useContext(AccountContext)
 
-    const loadAccountInfo = async (address) => {
-        console.log("AccountToLoad: ", address);
-        setLoadingAccountInfo(true);
-        _loadAccountInfo(address);
-        _loadTransactions(address);
+    const loadAccountInfo = async () => {
+        if (currentAccount != null) {
+            console.log("AccountToLoad: ", currentAccount);
+            setLoadingAccountInfo(true);
+            _loadAccountInfo();
+            _loadTransactions();
+        }
     }
 
-    const _loadTransactions = async (address) => {
+    const _loadTransactions = async () => {
         try {
             client.connect().then(async () => {
                 const account = await client.request({
                     "command": "account_tx",
-                    "account": address
+                    "account": currentAccount.classicAddress,
                 });
         
                 console.log("account", account);
@@ -42,29 +48,34 @@ export function AccountInfoProvider({children}) {
             console.log(err);
         }
     }
-    const _loadAccountInfo = async (address) => {
+
+    const _loadAccountInfo = async () => {
         try {
             client.connect().then(async () => {
                 const account = await client.request({
                     "command": "account_info",
-                    "account": address
+                    "account": currentAccount.classicAddress
                 });
         
                 console.log("account", account);
                 setAccount(account.result.account_data);
-                setCurrentAccount(address);
             })
         } catch (err) {
             setLoadingAccountInfo(false);
             console.log(err);
         }
     }
+
+    useEffect(() => {
+        loadAccountInfo();
+    }, [currentAccount])
     
     return (
         <AccountInfoContext.Provider value={{
-            account, setAccount,
             loadAccountInfo,
-            currentAccount, loadingAccountInfo,
+            loadingAccountInfo,
+            account,
+            currentAccount, 
             transactions,
         }}>
             {children}

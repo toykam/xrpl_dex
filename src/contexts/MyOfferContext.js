@@ -13,26 +13,28 @@ export function MyOfferProvider({children}) {
     const [loadingMyOffers, setLoadingMyOffers] = useState(false)
 
     const {client} = useContext(XRPLClientContext)
-    const {currentAccount} = useContext(AccountInfoContext)
-    const {accounts} = useContext(AccountContext)
+    // const {currentAccount} = useContext(AccountInfoContext)
+    const {accounts, currentAccount} = useContext(AccountContext)
 
     const loadMyOffers = async () => {
-        console.log("Account: ", currentAccount);
-        try {
-            client.connect()
-            .then(async () => {
-                setLoadingMyOffers(true)
-                const offers = await client.request({
-                    "command": "account_offers",
-                    "account": currentAccount
-                });
-                setMyOffers(offers.result.offers);
+        if (currentAccount != null) {
+            console.log("Account: ", currentAccount);
+            try {
+                client.connect()
+                .then(async () => {
+                    setLoadingMyOffers(true)
+                    const offers = await client.request({
+                        "command": "account_offers",
+                        "account": currentAccount.classicAddress
+                    });
+                    setMyOffers(offers.result.offers);
+                    setLoadingMyOffers(false)
+                })
+            } catch (error) {
                 setLoadingMyOffers(false)
-            })
-        } catch (error) {
-            setLoadingMyOffers(false)
-            console.log(error)
-            client.disconnect();
+                console.log(error)
+                client.disconnect();
+            }
         }
     }
 
@@ -45,7 +47,7 @@ export function MyOfferProvider({children}) {
 
                 const offerToCancel = {
                     "TransactionType": "OfferCancel",
-                    "Account": currentAccount,
+                    "Account": currentAccount.classicAddress,
                     "OfferSequence": offerSequence
                 };
 

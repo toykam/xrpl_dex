@@ -3,17 +3,18 @@
 import React, { useContext, useState } from 'react'
 import LoadingComponent from '../../components/LoadingComponent'
 import AccountContext from '../../contexts/AccountContext'
+import AccountInfoContext from '../../contexts/AccountInfoContext'
 import OfferContext from '../../contexts/OfferContext'
 import XRPLClientContext from '../../contexts/XRPLClientContext'
+import MyOfferContext from '../../contexts/MyOfferContext'
 import { xrpl } from '../../utils/constants'
 
 export default function TradePage() {
 
   const {connected, client} = useContext(XRPLClientContext)
-  const {accounts} = useContext(AccountContext)
-  // const [whatToBuy, setWhatToBuy] = useState(null)
-  // const [whatToSell, setWhatToSell] = useState(null)
-  // const [offers, setOffers] = useState([])
+  const {accounts, currentAccount} = useContext(AccountContext)
+  // const {currentAccount} = useContext(AccountInfoContext)
+  // const {account} = useContext(AccountInfoCon)
 
   const {
     offers, setOffers,
@@ -26,39 +27,45 @@ export default function TradePage() {
     tradables, swap
   } = useContext(OfferContext)
 
-  const [account, setAccount] = useState(null);
-  const [accountDetail, setAccountDetail] = useState(null);
+  const {
+    loadMyOffers
+  } = useContext(MyOfferContext)
 
-  const getAccountDetail = async (acct) => {
-    console.log(acct)
-    try {
-        setAccount(null)
-        setAccountDetail(null)
-        client.connect().then(async () => {
-            const {classicAddress} = JSON.parse(acct)
-            const account = await client.request({
-                "command": "account_info",
-                "account": classicAddress
-            });
-            setAccount(account.result.account_data);
-            setAccountDetail(JSON.parse(acct))
-            // client.disconnect();
-        }).catch (err => {client.disconnect()})
-    } catch(err) {
-        // setMessage(err.message);
-        setAccount(null);
-        setTimeout(() => {
-            // setMessage("");
-        }, 2000)
-    }
-  }
+  // const [account, setAccount] = useState(null);
+  // const [accountDetail, setAccountDetail] = useState(null);
+
+  // const getAccountDetail = async (acct) => {
+  //   console.log(acct)
+  //   try {
+  //       setAccount(null)
+  //       setAccountDetail(null)
+  //       client.connect().then(async () => {
+  //           const {classicAddress} = JSON.parse(acct)
+  //           const acct = accounts.find(a => a.classicAddress === acct)
+
+  //           const account = await client.request({
+  //               "command": "account_info",
+  //               "account": acct.classicAddress
+  //           });
+  //           setAccount(account.result.account_data);
+  //           setAccountDetail(acct)
+  //           // client.disconnect();
+  //       }).catch (err => {client.disconnect()})
+  //   } catch(err) {
+  //       // setMessage(err.message);
+  //       setAccount(null);
+  //       setTimeout(() => {
+  //           // setMessage("");
+  //       }, 2000)
+  //   }
+  // }
 
   const findOffers = async () => {
     try {
-      console.log("Account: ", accountDetail)
+      console.log("Account: ", currentAccount)
       const offerRequesr = {
         "command": "book_offers",
-        "taker": accountDetail.classicAddress,
+        "taker": currentAccount.classicAddress,
         "taker_gets": {
           "currency": whatToSell.symbol,
           ...(whatToSell.symbol == "XRP" ? {} : {"issuer": whatToSell.issuer}),
@@ -112,7 +119,7 @@ export default function TradePage() {
       try {
         const offer_1 = {
           "TransactionType": "OfferCreate",
-          "Account": accountDetail.classicAddress,
+          "Account": currentAccount.classicAddress,
           "TakerPays": whatToBuy.symbol == "XRP" ? xrpl.xrpToDrops(amountToGet) : {
             currency: whatToBuy.symbol,
             ...(whatToBuy.symbol == "XRP" ? {} : {issuer: whatToBuy.issuer}),
@@ -123,7 +130,8 @@ export default function TradePage() {
             currency: whatToSell.symbol,
             ...(whatToSell.symbol == "XRP" ? {} : {issuer: whatToSell.issuer}),
             value: `${whatToSell.symbol == "XRP" ? xrpl.xrpToDrops(amountToSell) : amountToSell}`
-          }
+          },
+          "Flags": xrpl.OfferCreateFlags.tfSell
         }
     
         console.log("Offer 1: ", offer_1)
@@ -134,12 +142,13 @@ export default function TradePage() {
           console.log("Conected: ", res)
 
           const prepared = await client.autofill(offer_1)
-          console.log("Prepared transaction:", JSON.stringify(prepared, null, 2))
-          const wallet = xrpl.Wallet.fromSeed(accountDetail.seed)
+          console.log("PreparedTransaction:", JSON.stringify(prepared, null, 2))
+          const wallet = xrpl.Wallet.fromSeed(currentAccount.seed)
           const signed = wallet.sign(prepared)
 
           const createOfferResponse = await client.submitAndWait(signed.tx_blob)
           console.log("CreateOfferRes: ", createOfferResponse)
+          loadMyOffers()
         })
         .catch (err => {
           console.log("Error: ", err)
@@ -157,18 +166,18 @@ export default function TradePage() {
       <div className='row'>
         {/* The Side Bar to provide over detail */}
         <div className='col-md-3'>
-            <div class="input-group input-group-sm mb-3">
+            {/* <div class="input-group input-group-sm mb-3">
                 <label className="input-group-text" for="source">Wallet</label>
                 <select class="form-select" aria-label="Select Source" id='source' onChange={(elem) => getAccountDetail(elem.target.value)}>
                     <option selected>Select Wallet</option>
                     {accounts.map((account, index) => {
-                        return <option key={index} value={JSON.stringify(account)}>{account.name}</option>
+                        return <option key={index} value={account.classicAddress}>{account.name}</option>
                     })}
                 </select>
                 <label class="input-group-text" for="source">{account != null ? (Number(account.Balance)/1000000).toFixed(2) : '0'} XRP</label>
-            </div>
+            </div> */}
 
-            {accountDetail != null ? <>
+            {currentAccount != null ? <>
 
               <div class="input-group input-group-sm mb-3">
                 <label className="input-group-text" for="source">Buy</label>
@@ -209,7 +218,9 @@ export default function TradePage() {
                   value={amountToGet} onChange={(val) => setAmountToGet(val.target.value)} placeholder={`How much ${whatToBuy && whatToBuy.symbol} do you want to get`}
                   type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-sm"></input>
               </div>
-            </> : <></>}
+            </> : <div className='alert alert-info'>
+              Please connect/select a wallet
+            </div>}
 
 
             {(!findingOffers) ? 
@@ -292,7 +303,7 @@ export default function TradePage() {
                       const tpc = whatToBuy.symbol;
 
                       
-                      return <tr key={index} className={offer.Account == accountDetail.classicAddress ? `bg-primary` : ``}>
+                      return <tr key={index} className={currentAccount && (offer.Account == currentAccount.classicAddress ? `bg-primary` : ``)}>
                         <td>{index}</td>
                         <td>1 {whatToSell.symbol} = {(tps/tgs).toFixed(2)} {whatToBuy.symbol}</td>
                         <td>{tgs} {tgc}</td>

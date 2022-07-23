@@ -18,24 +18,24 @@ function App() {
     <BrowserRouter>
       <div className="App">
         <XRPLClientProvider>
-            <AccountInfoProvider>
-              <AccountProvider>
-                  <OfferProvider>
-                    <MyOfferProvider>
+            <AccountProvider>
+              <AccountInfoProvider>
+                    <OfferProvider>
+                      <MyOfferProvider>
 
-                      <NavBar></NavBar>
+                        <NavBar></NavBar>
 
-                      <Routes>
-                        <Route path="/" element={<HomePage />} />
-                        <Route path="transfer" element={<TransferPage />} />
-                        <Route path="trade" element={<TradePage />} />
-                        <Route path="my_offers" element={<MyOffersPage />} />
-                      </Routes>
+                        <Routes>
+                          <Route path="/" element={<HomePage />} />
+                          <Route path="transfer" element={<TransferPage />} />
+                          <Route path="trade" element={<TradePage />} />
+                          <Route path="my_offers" element={<MyOffersPage />} />
+                        </Routes>
 
-                    </MyOfferProvider>
-                  </OfferProvider>
-              </AccountProvider>
-            </AccountInfoProvider>
+                      </MyOfferProvider>
+                    </OfferProvider>
+              </AccountInfoProvider>
+            </AccountProvider>
         </XRPLClientProvider>
       </div>
     </BrowserRouter>

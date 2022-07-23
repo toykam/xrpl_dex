@@ -10,8 +10,8 @@ export default function ConnectWallet() {
     const [secret, setSecret] = useState('');
     const [name, setName] = useState('');
 
-    const { addAccount, accounts, removeAccount } = useContext(AccountContext);
-    const { account, currentAccount, loadAccountInfo } = useContext(AccountInfoContext);
+    const { addAccount, accounts, removeAccount, currentAccount } = useContext(AccountContext);
+    const { account, loadAccountInfo } = useContext(AccountInfoContext);
     const {client} = useContext(XRPLClientContext)
 
     // const loadAccountInfo = (add) => {}
@@ -99,10 +99,12 @@ export default function ConnectWallet() {
 
         
             <ul class="list-group">
-                {accounts.map(account => (
+                {currentAccount == null ? <div className='alert alert-info'>
+                    <p>Please select a wallet</p>
+                </div> : accounts.map(account => (
                     <div 
                         key={account.classicAddress} 
-                        className={currentAccount === account.classicAddress ? "SelectedAccountAddress list-group-item active mb-1" : "AccountAddress list-group-item mb-1"}>
+                        className={currentAccount.classicAddress === account.classicAddress ? "SelectedAccountAddress list-group-item active mb-1" : "AccountAddress list-group-item mb-1"}>
                         <p 
                             onClick={() => loadAccountInfo(account.classicAddress, client)} 
                             >{account.name}<br/>{account.classicAddress}</p>

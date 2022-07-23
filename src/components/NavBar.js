@@ -1,17 +1,18 @@
 
 
-import React from 'react'
+import React, { useContext } from 'react'
 import { Link } from 'react-router-dom';
-// import AccountContext from '../contexts/AccountContext'
+import AccountContext from '../contexts/AccountContext'
 // import XRPLClientContext from '../contexts/XRPLClientContext';
 
 export default function NavBar() {
 
-    // const {accounts} = useContext(AccountContext);
+    const {accounts, switchCurrentAccount} = useContext(AccountContext);
     // const {client} = useContext(XRPLClientContext);
 
   return (
-    <nav class="navbar navbar-expand-lg bg-dark App-header sticky-top">
+    <nav class="navbar navbar-expand-lg bg-dark App-header sticky-top px-2">
+
       <div class="container-fluid">
         <a class="navbar-brand text-light" href="#">XRPL Trading App</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -38,7 +39,22 @@ export default function NavBar() {
 
           </ul>
         </div>
+
+        <div class="d-flex">
+
+            <div class="input-group input-group-sm">
+                <label className="input-group-text" for="source">Wallet</label>
+                <select class="form-select" aria-label="Select Source" id='source' onChange={(elem) => switchCurrentAccount(elem.target.value)}>
+                    <option selected>Select Wallet</option>
+                    {accounts.map((account, index) => {
+                        return <option key={index} value={account.classicAddress}>{account.name}</option>
+                    })}
+                </select>
+            </div>
+
+        </div>
       </div>
+
     </nav>
   )
 }
