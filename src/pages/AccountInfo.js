@@ -43,7 +43,7 @@ export default function AccountInfoPage() {
               {transactions.map(txx => {
                 const {tx} = txx;
                 const date = new Date(tx.date);
-                console.log("tx: ", tx);
+                // console.log("tx: ", tx);
                 return (
                   <tr key={tx.hash}>
                     <td className='d-flex flex-sm-column align-items-start flex-nowrap' style={{"width": "100px"}}>
