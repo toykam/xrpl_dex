@@ -4,6 +4,9 @@ import XRPLClientContext from "./XRPLClientContext";
 import AccountInfoContext from "./AccountInfoContext";
 import AccountContext from "./AccountContext";
 import { xrpl } from "../utils/constants";
+import alertify from "alertifyjs";
+
+import "../../node_modules/alertifyjs/build/css/alertify.min.css";
 
 const MyOfferContext = createContext();
 
@@ -18,7 +21,7 @@ export function MyOfferProvider({children}) {
 
     const loadMyOffers = async () => {
         if (currentAccount != null) {
-            console.log("Account: ", currentAccount);
+            // console.log("Account: ", currentAccount);
             try {
                 client.connect()
                 .then(async () => {
@@ -39,7 +42,7 @@ export function MyOfferProvider({children}) {
     }
 
     const cancelOffer = async (offerSequence) => {
-        console.log("Account: ", currentAccount);
+        // console.log("Account: ", currentAccount);
         try {
             client.connect()
             .then(async () => {
@@ -51,27 +54,30 @@ export function MyOfferProvider({children}) {
                     "OfferSequence": offerSequence
                 };
 
-                const acct = accounts.find(a => a.classicAddress === currentAccount)
+                // console.log("Accounts: ", accounts)
+                const acct = accounts.find(a => a.classicAddress === currentAccount.classicAddress)
                 const wallet = xrpl.Wallet.fromSeed(acct.seed);
                 const prepare = await client.autofill(offerToCancel)
 
                 const tx = wallet.sign(prepare)
 
                 const result = await client.submitAndWait(tx.tx_blob);
-                console.log("CancelOfferRes: ", result)
+                // console.log("CancelOfferRes: ", result)
+                alertify.success("Offer cancelled: ")
                 loadMyOffers()
             })
         } catch (error) {
             setLoadingMyOffers(false)
             console.log(error)
+            alertify.error("Error: ", error)
             client.disconnect();
         }
     }
 
     useEffect(() => {
-        console.log("MyOfferProvider: useEffect")
-        console.log("currentAccount: ", currentAccount)
-        console.log("MyOfferProvider: useEffect")
+        // console.log("MyOfferProvider: useEffect")
+        // console.log("currentAccount: ", currentAccount)
+        // console.log("MyOfferProvider: useEffect")
       loadMyOffers();
     }, [currentAccount])
     

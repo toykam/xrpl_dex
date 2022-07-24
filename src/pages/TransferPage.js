@@ -122,7 +122,7 @@ export default function TransferPage() {
                                 return <option key={index} value={JSON.stringify(account)}>{account.name}</option>
                             })}
                         </select>
-                        <label class="input-group-text" for="source">{account != null ? (Number(account.Balance)/1000000).toFixed(2) : '0'} XRP</label>
+                        <label class="input-group-text" for="source">{account != null ? (Number(account.Balance)/1000000).toFixed(2) - 10 : '0'} XRP</label>
                     </div>
 
                     {account == null ?

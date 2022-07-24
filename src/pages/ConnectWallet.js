@@ -57,7 +57,7 @@ export default function ConnectWallet() {
     }
 
     return (
-        <div className='ConnectAccount overflow-scroll' >
+        <div className='' >
 
             <small>{message}</small>
 
@@ -99,12 +99,10 @@ export default function ConnectWallet() {
 
         
             <ul class="list-group">
-                {currentAccount == null ? <div className='alert alert-info'>
-                    <p>Please select a wallet</p>
-                </div> : accounts.map(account => (
+                {accounts.map(account => (
                     <div 
                         key={account.classicAddress} 
-                        className={currentAccount.classicAddress === account.classicAddress ? "SelectedAccountAddress list-group-item active mb-1" : "AccountAddress list-group-item mb-1"}>
+                        className={(currentAccount != null && (currentAccount.classicAddress === account.classicAddress)) ? "SelectedAccountAddress list-group-item active mb-1" : "AccountAddress list-group-item mb-1"}>
                         <p 
                             onClick={() => loadAccountInfo(account.classicAddress, client)} 
                             >{account.name}<br/>{account.classicAddress}</p>

@@ -8,6 +8,9 @@ import OfferContext from '../../contexts/OfferContext'
 import XRPLClientContext from '../../contexts/XRPLClientContext'
 import MyOfferContext from '../../contexts/MyOfferContext'
 import { xrpl } from '../../utils/constants'
+import alertify from 'alertifyjs'
+import "../../../node_modules/alertifyjs/build/css/alertify.css";
+import "../../../node_modules/alertifyjs/build/css/themes/semantic.css";
 
 export default function TradePage() {
 
@@ -84,6 +87,7 @@ export default function TradePage() {
 
       client.connect()
       .then(async (res) => {
+        alertify.message("Finding you an offer...")
         console.log("Connected: ", res)
         console.log("Request: ", offerRequesr)
         const offerResponse = await client.request(offerRequesr)
@@ -117,6 +121,7 @@ export default function TradePage() {
 
   const acceptOffer = async (offerValue) => {
       try {
+
         const offer_1 = {
           "TransactionType": "OfferCreate",
           "Account": currentAccount.classicAddress,
@@ -139,6 +144,7 @@ export default function TradePage() {
         
         client.connect()
         .then(async (res) => {
+          alertify.message("Looking to acceppt your offer...")
           console.log("Conected: ", res)
 
           const prepared = await client.autofill(offer_1)

@@ -9,10 +9,10 @@ export function XRPLClientProvider({children}) {
 
     const connect = () => {
         client.connect().then(() => {
-            console.log("Connected to XRPL");
+            // console.log("Connected to XRPL");
             setConneted(true);
         }).catch(err => {
-            console.log("Error connecting to XRPL: ", err);
+            // console.log("Error connecting to XRPL: ", err);
             setConneted(false);
             connect();
         })

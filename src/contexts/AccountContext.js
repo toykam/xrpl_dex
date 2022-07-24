@@ -31,17 +31,21 @@ export function AccountProvider({children}) {
     }
 
     const switchCurrentAccount = (address) => {
-        const account = accounts.find(a => a.classicAddress === address);
-        setCurrentAccount(account);
+        // console.log("Switch current account", address);
+        const acct = accounts.find(a => a.classicAddress === address);
+        console.log("SwitchedAccount: ", acct);
+        setCurrentAccount(acct);
     }
 
     const initialize = () => {
         try {
-            console.log("AccountContextCalled: ")
+            // console.log("AccountContextCalled: ")
             const accounts = JSON.parse(localStorage.getItem("accounts") || "[]");
+            console.log('SavedAccount: ', accounts)
             setAccounts(accounts);
             accounts.length > 0 && switchCurrentAccount(accounts[0].classicAddress);
-        } catch (eror) {
+        } catch (error) {
+            console.log("Error: ", error)
         }
     }
 

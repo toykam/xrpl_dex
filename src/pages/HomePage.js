@@ -7,7 +7,7 @@ import ConnectWallet from './ConnectWallet'
 
 export default function HomePage() {
   return (
-    <div className='container row bg-light p-2 overflow-auto'>
+    <div className='container-fluid row bg-light p-2 overflow-auto'>
 
         <div className='col-md-4'>
           <ConnectWallet></ConnectWallet>

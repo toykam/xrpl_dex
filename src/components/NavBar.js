@@ -7,7 +7,7 @@ import AccountContext from '../contexts/AccountContext'
 
 export default function NavBar() {
 
-    const {accounts, switchCurrentAccount} = useContext(AccountContext);
+    const {accounts, switchCurrentAccount, currentAccount} = useContext(AccountContext);
     // const {client} = useContext(XRPLClientContext);
 
   return (
@@ -44,7 +44,10 @@ export default function NavBar() {
 
             <div class="input-group input-group-sm">
                 <label className="input-group-text" for="source">Wallet</label>
-                <select class="form-select" aria-label="Select Source" id='source' onChange={(elem) => switchCurrentAccount(elem.target.value)}>
+                <select 
+                  value={currentAccount && currentAccount.classicAddress}
+                  class="form-select" aria-label="Select Source" 
+                  id='source' onChange={(elem) => switchCurrentAccount(elem.target.value)}>
                     <option selected>Select Wallet</option>
                     {accounts.map((account, index) => {
                         return <option key={index} value={account.classicAddress}>{account.name}</option>
