@@ -16,6 +16,7 @@ export default function TradePage() {
 
   const {connected, client} = useContext(XRPLClientContext)
   const {accounts, currentAccount} = useContext(AccountContext)
+  const {averageAmount, setAverageAmount} = useState(0)
   // const {currentAccount} = useContext(AccountInfoContext)
   // const {account} = useContext(AccountInfoCon)
 
@@ -34,53 +35,26 @@ export default function TradePage() {
     loadMyOffers
   } = useContext(MyOfferContext)
 
-  // const [account, setAccount] = useState(null);
-  // const [accountDetail, setAccountDetail] = useState(null);
-
-  // const getAccountDetail = async (acct) => {
-  //   console.log(acct)
-  //   try {
-  //       setAccount(null)
-  //       setAccountDetail(null)
-  //       client.connect().then(async () => {
-  //           const {classicAddress} = JSON.parse(acct)
-  //           const acct = accounts.find(a => a.classicAddress === acct)
-
-  //           const account = await client.request({
-  //               "command": "account_info",
-  //               "account": acct.classicAddress
-  //           });
-  //           setAccount(account.result.account_data);
-  //           setAccountDetail(acct)
-  //           // client.disconnect();
-  //       }).catch (err => {client.disconnect()})
-  //   } catch(err) {
-  //       // setMessage(err.message);
-  //       setAccount(null);
-  //       setTimeout(() => {
-  //           // setMessage("");
-  //       }, 2000)
-  //   }
-  // }
+  
 
   const findOffers = async () => {
     try {
       console.log("Account: ", currentAccount)
       const offerRequesr = {
         "command": "book_offers",
-        "taker": currentAccount.classicAddress,
+        // "taker": currentAccount.classicAddress,
         "taker_gets": {
           "currency": whatToSell.symbol,
           ...(whatToSell.symbol == "XRP" ? {} : {"issuer": whatToSell.issuer}),
-          "value": `${whatToSell.symbol == "XRP" ? xrpl.xrpToDrops(amountToSell) : amountToSell}`
+          ...(amountToSell > 0 ? {"value": `${whatToBuy.symbol == "XRP" ? xrpl.xrpToDrops(amountToSell) : amountToSell}`} : {})
         },
         "taker_pays": {
           "currency": whatToBuy.symbol,
           ...(whatToBuy.symbol == "XRP" ? {} : {"issuer": whatToBuy.issuer}),
-          "value": `${whatToBuy.symbol == "XRP" ? xrpl.xrpToDrops(amountToGet) : amountToGet}`
+          ...(amountToGet > 0 ? {"value": `${whatToBuy.symbol == "XRP" ? xrpl.xrpToDrops(amountToGet) : amountToGet}`} : {})
         },
         "limit": 1000,
-        "ledger_index" : "current"
+        "ledger_index" : "validated"
       }
 
       setFindingOffers(true)
@@ -94,16 +68,11 @@ export default function TradePage() {
 
         console.log("Offer Response: ", offerResponse)
         const offers = offerResponse.result.offers;
+        // const averageAmount = offers.reduce((acc, cur) => acc + cur.TakerGets.value, 0) / offers.length
         setOffers(offers)
+        // setAverageAmount((amt) => )
         if (amountToSell && amountToGet) {
 
-          // setQuality((Number(whatToSell.symbol == "XRP" ? xrpl.xrpToDrops(amountToSell) : amountToSell) 
-          // / Number(whatToBuy.symbol == "XRP" ? xrpl.xrpToDrops(amountToGet) : amountToGet)))
-
-          // setOffers(offers.filter(offer => {
-          //   const isMet = offer.quality <= quality;
-          //   return isMet
-          // }))
         }
         // setOffers(offerResponse.result.offers)
         setFindingOffers(false)
@@ -119,7 +88,7 @@ export default function TradePage() {
     }
   }
 
-  const acceptOffer = async (offerValue) => {
+  const createOffer = async (offerValue) => {
       try {
 
         const offer_1 = {
@@ -136,7 +105,7 @@ export default function TradePage() {
             ...(whatToSell.symbol == "XRP" ? {} : {issuer: whatToSell.issuer}),
             value: `${whatToSell.symbol == "XRP" ? xrpl.xrpToDrops(amountToSell) : amountToSell}`
           },
-          "Flags": xrpl.OfferCreateFlags.tfSell
+          "Flags": xrpl.OfferCreateFlags.tfFillOrKill
         }
     
         console.log("Offer 1: ", offer_1)
@@ -166,8 +135,56 @@ export default function TradePage() {
       }
   }
 
+
+  const exchangeToken = async (offerValue) => {
+    try {
+
+      const offer_1 = {
+        "TransactionType": "OfferCreate",
+        "Account": currentAccount.classicAddress,
+        "TakerPays": whatToBuy.symbol == "XRP" ? xrpl.xrpToDrops(amountToGet) : {
+          currency: whatToBuy.symbol,
+          ...(whatToBuy.symbol == "XRP" ? {} : {issuer: whatToBuy.issuer}),
+          value: `${whatToBuy.symbol == "XRP" ? xrpl.xrpToDrops(amountToGet) : amountToGet}`
+        },
+        // "TakerGets": xrpl.xrpToDrops(amount)
+        "TakerGets": whatToSell.symbol == "XRP" ? xrpl.xrpToDrops(amountToSell) : {
+          currency: whatToSell.symbol,
+          ...(whatToSell.symbol == "XRP" ? {} : {issuer: whatToSell.issuer}),
+          value: `${whatToSell.symbol == "XRP" ? xrpl.xrpToDrops(amountToSell) : amountToSell}`
+        },
+        "Flags": xrpl.OfferCreateFlags.tfImmediateOrCancel
+      }
+  
+      console.log("Offer 1: ", offer_1)
+  
+      
+      client.connect()
+      .then(async (res) => {
+        alertify.message("Looking to acceppt your offer...")
+        console.log("Conected: ", res)
+
+        const prepared = await client.autofill(offer_1)
+        console.log("PreparedTransaction:", JSON.stringify(prepared, null, 2))
+        const wallet = xrpl.Wallet.fromSeed(currentAccount.seed)
+        const signed = wallet.sign(prepared)
+
+        const createOfferResponse = await client.submitAndWait(signed.tx_blob)
+        console.log("CreateOfferRes: ", createOfferResponse)
+        loadMyOffers()
+      })
+      .catch (err => {
+        console.log("Error: ", err)
+        client.disconnect()
+      })
+    } catch (error) {
+      console.log("Error: ", error)
+        client.disconnect()
+    }
+}
+
   return (
-    <div className='container-fluid bg-light p-2 h-100'>
+    <div className='container-fluid bg-light p-2 h-100 table-sm'>
       {connected ? 
       <div className='row'>
         {/* The Side Bar to provide over detail */}
@@ -263,13 +280,25 @@ export default function TradePage() {
               </button>
             }
 
-            {(amountToGet && amountToSell) ? <button onClick={() => acceptOffer(0)} type="button" 
-                className="btn btn-primary"
-                    style={{
-                        "--bs-btn-padding-y": ".25rem", "--bs-btn-padding-x": ".5rem", "--bs-btn-font-size": ".75rem"
-                    }}>
-                Create Offer
-            </button> : <></>}
+            {(amountToGet && amountToSell) ? 
+            <>
+              <button onClick={() => createOffer(0)} type="button" 
+                  className="btn btn-primary"
+                      style={{
+                          "--bs-btn-padding-y": ".25rem", "--bs-btn-padding-x": ".5rem", "--bs-btn-font-size": ".75rem"
+                      }}>
+                  Create Offer
+              </button> 
+
+              <button onClick={() => exchangeToken(0)} type="button" 
+                  className="btn btn-primary"
+                      style={{
+                          "--bs-btn-padding-y": ".25rem", "--bs-btn-padding-x": ".5rem", "--bs-btn-font-size": ".75rem"
+                      }}>
+                  Exchange
+              </button> 
+            </>
+            : <></>}
         </div>
 
 

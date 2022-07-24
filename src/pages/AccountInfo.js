@@ -29,13 +29,13 @@ export default function AccountInfoPage() {
 
           <h3>Transactions</h3>
 
-          <table className='table table-responsive table-stripe'>
+          <table className='table table-responsive table-hover table-sm'>
             <thead>
               <tr>
-                <th>TransactionType</th>
-                <th>Fee</th>
-                <th>Amount</th>
-                <th>Date</th>
+                <th scope='col'>Type</th>
+                <th scope='col'>Fee</th>
+                <th scope='col'>Amount</th>
+                <th scope='col'>Date</th>
               </tr>
             </thead>
 
@@ -46,14 +46,14 @@ export default function AccountInfoPage() {
                 // console.log("tx: ", tx);
                 return (
                   <tr key={tx.hash}>
-                    <td className='d-flex flex-sm-column align-items-start flex-nowrap' style={{"width": "100px"}}>
-                      <p style={{"marginBottom": 0}} className={tx.TransactionType.includes('Cancel') ? 'bg-danger' : 'bg-primary'}>{tx.TransactionType}</p>
-                      <small>{
+                    <td className='d-flex flex-sm-column align-items-start flex-nowrap'>
+                      <p style={{"marginBottom": 0}} className={tx.TransactionType.includes('Cancel') ? 'text-danger' : 'text-primary'}>{tx.TransactionType}</p>
+                      {/* <small>{
                         tx.TransactionType.includes("OfferCreate") ? 
-                          typeof tx.TakerGets == "string" ? `${Number(tx.TakerGets) / 1000000} XRP for ${tx.TakerPays.value} ${tx.TakerPays.currency}` :  
-                          `${Number(tx.TakerPays) / 1000000} XRP for ${tx.TakerGets.value} ${tx.TakerGets.currency}` :
+                          typeof tx.TakerGets == "string" ? `${Number(tx.TakerGets) / 1000000} XRP \n ${tx.TakerPays.value} ${tx.TakerPays.currency}` :  
+                          `${Number(tx.TakerPays) / 1000000} XRP \n ${tx.TakerGets.value} ${tx.TakerGets.currency}` :
                           <></>
-                      }</small>
+                      }</small> */}
                     </td>
                     <td>{Number(tx.Fee)/1000000} XRP</td>
                     <td>{

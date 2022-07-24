@@ -24,7 +24,7 @@ export function OfferProvider({children}) {
           'issuer': '',
         },
         {
-          'symbol': 'SOLO',
+          'symbol': '534F4C4F00000000000000000000000000000000',
           'name': 'Sologenic',
           'issuer': 'rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz',
         },
@@ -42,6 +42,16 @@ export function OfferProvider({children}) {
           'symbol': 'USD',
           'name': 'US Dollars',
           'issuer': 'rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq',
+        },
+        {
+          'symbol': 'APX',
+          'name': 'APXX',
+          'issuer': 'rL2sSC2eMm6xYyx1nqZ9MW4AP185mg7N9t',
+        },
+        {
+          'symbol': 'MLD',
+          'name': 'MLD',
+          'issuer': 'rhJYDuVMQxabTyiWuHQkQyDxr6uZEdpv5u',
         }
     ]
 
